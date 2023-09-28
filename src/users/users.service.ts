@@ -13,7 +13,7 @@ export class UsersService {
   ){}
 
   createToken({email, name, password}: User) {
-    return jwt.sign({ email, name, password }, 'secret');
+    return jwt.sign({ email, name }, 'secret');
   }
 
   async createUser(user: CreateUserInput): Promise<User> {

@@ -11,8 +11,8 @@ export class UsersResolver {
 
   @Query(() => User)
   @UseGuards(new AuthGuard())
-  user(@Context('user') user: User) {
-    return user;
+  user(@Args('email') email: string): Promise<User> {
+    return this.userService.getUserByEmail(email);
   }
 
   @Mutation(() => String)
