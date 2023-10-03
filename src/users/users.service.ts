@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/user.input';
-import { User } from './entitiy/users.entity';
+import { User } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { LoginResponse } from './dto/login.response';
 
 @Injectable()
 export class UsersService {
@@ -12,9 +13,11 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ){}
 
-  createToken({email, name, password}: User) {
-    return jwt.sign({ email, name }, 'secret');
-  }
+  async createToken({email, password}: User): Promise<LoginResponse>{
+    return {
+      accessToken: jwt.sign({ email, password}, 'secret'),
+    }
+  };
 
   async createUser(user: CreateUserInput): Promise<User> {
     const { password, ...userData } = user;

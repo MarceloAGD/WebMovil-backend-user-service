@@ -1,9 +1,10 @@
 import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { CreateUserInput } from './dto/user.input';
-import { User } from './entitiy/users.entity'
+import { User } from './users.entity'
 import { AuthGuard } from './auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { LoginResponse } from './dto/login.response';
 
 @Resolver('User')
 export class UsersResolver {
@@ -15,13 +16,13 @@ export class UsersResolver {
     return this.userService.getUserByEmail(email);
   }
 
-  @Mutation(() => String)
-  async login(@Args('input') input: CreateUserInput) {
+  @Mutation(() => LoginResponse)
+  async login(@Args('input') input: CreateUserInput){
     const user = await this.userService.getUserByEmail(input.email);
     if (!user) {
       const user = await this.userService.createUser(input);
-      return this.userService.createToken(user);
+      return await this.userService.createToken(user);
     }
-    return this.userService.createToken(user);
+    return await this.userService.createToken(user);
   }
 }
