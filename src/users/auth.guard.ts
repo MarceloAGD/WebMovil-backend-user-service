@@ -18,9 +18,6 @@ export class AuthMiddleware implements NestMiddleware {
 
     try {
       const decoded = jwt.verify(token, 'secret');
-      // Puedes almacenar la información del usuario en el objeto 'req' si es necesario.
-      // Por ejemplo, puedes hacerlo así:
-      // req.user = decoded;
       next();
     } catch (err) {
       return res.status(401).json({ message: 'Token error: ' + (err.message || err.name) });

@@ -5,22 +5,22 @@ import { User } from './users.entity'
 import { AuthMiddleware} from './auth.guard';
 import {UseGuards } from '@nestjs/common';
 
-@Controller('User')
+@Controller('user')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Get('get-user')
-  @UseGuards(AuthMiddleware)
-  user(@Query('email') email: string): Promise<User> {
+  @Get('getUser')
+  @UseGuards(AuthMiddleware) // Mueva el guardia a nivel de clase si es necesario
+  async user(@Query('email') email: string): Promise<User> {
     return this.userService.getUserByEmail(email);
   }
 
   @Post('sign-in')
-  async login(@Body('input') input: CreateUserInput){
+  async login(@Body() input: CreateUserInput): Promise<any> {
     const user = await this.userService.getUserByEmail(input.email);
     if (!user) {
-      const user = await this.userService.createUser(input);
-      return await this.userService.createToken(user);
+      const newUser = await this.userService.createUser(input);
+      return await this.userService.createToken(newUser);
     }
     return await this.userService.createToken(user);
   }
