@@ -1,23 +1,22 @@
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserInput } from './dto/user.input';
 import { User } from './users.entity'
-import { AuthGuard } from './auth.guard';
-import { UseGuards } from '@nestjs/common';
-import { LoginResponse } from './dto/login.response';
+import { AuthMiddleware} from './auth.guard';
+import {UseGuards } from '@nestjs/common';
 
-@Resolver('User')
-export class UsersResolver {
+@Controller('User')
+export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Query(() => User)
-  @UseGuards(new AuthGuard())
-  user(@Args('email') email: string): Promise<User> {
+  @Get('get-user')
+  @UseGuards(AuthMiddleware)
+  user(@Query('email') email: string): Promise<User> {
     return this.userService.getUserByEmail(email);
   }
 
-  @Mutation(() => LoginResponse)
-  async login(@Args('input') input: CreateUserInput){
+  @Post('sign-in')
+  async login(@Body('input') input: CreateUserInput){
     const user = await this.userService.getUserByEmail(input.email);
     if (!user) {
       const user = await this.userService.createUser(input);

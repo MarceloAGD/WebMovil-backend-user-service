@@ -5,7 +5,6 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { LoginResponse } from './dto/login.response';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +12,7 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ){}
 
-  async createToken({email, password}: User): Promise<LoginResponse>{
+  async createToken({email, password}: User){
     return {
       accessToken: jwt.sign({ email, password}, 'secret'),
     }

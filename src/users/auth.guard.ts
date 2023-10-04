@@ -1,36 +1,29 @@
-import {
-    Injectable,
-    CanActivate,
-    ExecutionContext,
-    HttpException,
-    HttpStatus,
-  } from '@nestjs/common';
-  import { GqlExecutionContext } from '@nestjs/graphql';
-  import * as jwt from 'jsonwebtoken';
-  
-  @Injectable()
-  export class AuthGuard implements CanActivate {
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-      const ctx = GqlExecutionContext.create(context).getContext();
-      if (!ctx.headers.authorization) {
-        return false;
-      }
-      ctx.user = await this.validateToken(ctx.headers.authorization);
-      return true;
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import * as jwt from 'jsonwebtoken';
+
+@Injectable()
+export class AuthMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-  
-    async validateToken(auth: string) {
-      if (auth.split(' ')[0] !== 'Bearer') {
-        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
-      }
-      const token = auth.split(' ')[1];
-  
-      try {
-        const decoded = jwt.verify(token, 'secret');
-        return decoded;
-      } catch (err) {
-        const message = 'Token error: ' + (err.message || err.name);
-        throw new HttpException(message, HttpStatus.UNAUTHORIZED);
-      }
+
+    const [bearer, token] = authHeader.split(' ');
+
+    if (bearer !== 'Bearer') {
+      return res.status(401).json({ message: 'Invalid token format' });
+    }
+
+    try {
+      const decoded = jwt.verify(token, 'secret');
+      // Puedes almacenar la información del usuario en el objeto 'req' si es necesario.
+      // Por ejemplo, puedes hacerlo así:
+      // req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Token error: ' + (err.message || err.name) });
     }
   }
+}
