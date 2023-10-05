@@ -1,26 +1,35 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+export class AuthGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
 
-    const [bearer, token] = authHeader.split(' ');
-
-    if (bearer !== 'Bearer') {
-      return res.status(401).json({ message: 'Invalid token format' });
+    if (!request.headers.authorization) {
+      return false;
     }
 
     try {
-      const decoded = jwt.verify(token, 'secret');
-      next();
+      request.user = await this.validateToken(request.headers.authorization);
+      return true;
     } catch (err) {
-      return res.status(401).json({ message: 'Token error: ' + (err.message || err.name) });
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  async validateToken(auth: string) {
+    if (auth.split(' ')[0] !== 'Bearer') {
+      throw new HttpException('Invalid token format', HttpStatus.UNAUTHORIZED);
+    }
+    const token = auth.split(' ')[1];
+
+    try {
+      const decoded = jwt.verify(token, 'secret'); // Cambia 'secret' por tu clave secreta
+      return decoded;
+    } catch (err) {
+      const message = 'Token error: ' + (err.message || err.name);
+      throw new HttpException(message, HttpStatus.UNAUTHORIZED);
     }
   }
 }
