@@ -6,6 +6,12 @@ export class User{
     id: number;
     
     @Column()
+    name: string;
+
+    @Column()
+    lastname: string;
+
+    @Column()
     @Unique(["email"]) // Indica que el campo debe ser único en la columna "email"
     email: string;
     

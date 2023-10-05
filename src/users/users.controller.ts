@@ -17,17 +17,17 @@ export class UsersController {
   }
 
   @Post('sign-in')
-  async signin(@Body() input: CreateUserInput): Promise<any> {
+  async signin(@Body() input: CreateUserInput){
     const user = await this.userService.getUserByEmail(input.email);
     if (!user) {
       const newUser = await this.userService.createUser(input);
       return await this.userService.createToken(newUser);
     }
-    return await this.userService.createToken(user);
+    return 'User already exists';
   }
 
   @Post('login')
-  async login(@Body() input: CreateUserInput ): Promise<any>{
+  async login(@Body() input: CreateUserInput ){
     try{
       return await this.userService.login(input);
     }catch(error){

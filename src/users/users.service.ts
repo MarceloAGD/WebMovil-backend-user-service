@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserInput } from './dto/user.input';
+import * as input from './dto/user.input';
 import { User } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
@@ -14,12 +14,13 @@ export class UsersService {
   ){}
 
   async createToken({email, password}: User){
+    
     return {
       accessToken: jwt.sign({ email, password}, 'secret'),
     }
   };
 
-  async createUser(user: CreateUserInput): Promise<User> {
+  async createUser(user: input.CreateUserInput): Promise<User> {
     const { password, ...userData } = user;
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -35,7 +36,7 @@ export class UsersService {
     return this.userRepository.findOne({where: {email} });
   }
 
-  async login(input: CreateUserInput): Promise<any>{
+  async login(input: input.LoginUserInput): Promise<any>{
     
     const email = input.email
     const password = input.password
