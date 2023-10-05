@@ -16,7 +16,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, 
+        synchronize: false, 
+        migrationsRun: true,
+        migrations:[__dirname + '/../migrations/**/*{.ts,.js}'],
+        cli:{
+          migrationsDir: './migrations'
+        },
+        keepConnectionAlive: true, 
+        autoLoadEntities: true
       }),
       inject:[ConfigService],
       
