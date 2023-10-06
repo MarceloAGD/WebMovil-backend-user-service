@@ -20,8 +20,16 @@ export class UsersService {
     }
   };
 
-  async createUser(user: input.CreateUserInput): Promise<User> {
-    const { password, ...userData } = user;
+  getUserByEmail(email: string) {
+    return this.userRepository.findOne({where: {email} });
+  }
+
+  async createUser(input: input.CreateUserInput): Promise<User> {
+    const user = await this.getUserByEmail(input.email);
+    if(user){
+      throw new Error('User already exists');
+   }
+    const { password, ...userData } = input;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await this.userRepository.create({
@@ -30,10 +38,6 @@ export class UsersService {
     });
 
     return this.userRepository.save(newUser);
-  }
-
-  getUserByEmail(email: string) {
-    return this.userRepository.findOne({where: {email} });
   }
 
   async login(input: input.LoginUserInput): Promise<any>{
