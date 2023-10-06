@@ -5,7 +5,7 @@ import { User } from './users.entity'
 import { AuthGuard} from './auth.guard';
 import {UseGuards} from '@nestjs/common';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
-
+import * as input from './dto/user.input';
 @Controller('user')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
@@ -16,18 +16,21 @@ export class UsersController {
     return this.userService.getUserByEmail(email);
   }
 
-  @Post('sign-in')
-  async signin(@Body() input: CreateUserInput): Promise<any> {
-    const user = await this.userService.getUserByEmail(input.email);
-    if (!user) {
+  @Post('sign-up')
+  async signUp(@Body() input: input.CreateUserInput){
+    try{
       const newUser = await this.userService.createUser(input);
       return await this.userService.createToken(newUser);
+
+    }catch(error){
+      if(error.message === 'User already exists')
+      return {error: 'User already exists'};
     }
-    return await this.userService.createToken(user);
+    
   }
 
   @Post('login')
-  async login(@Body() input: CreateUserInput ): Promise<any>{
+  async login(@Body() input: input.LoginUserInput){
     try{
       return await this.userService.login(input);
     }catch(error){
@@ -48,7 +51,6 @@ export class UsersController {
         // Manejar otros errores aquí
         return { error: 'An error occurred' };
       }
-
     }
   }
 }
