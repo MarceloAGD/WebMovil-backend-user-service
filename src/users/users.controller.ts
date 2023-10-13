@@ -24,7 +24,8 @@ export class UsersController {
 
     }catch(error){
       if(error.message === 'User already exists')
-      return {error: 'User already exists'};
+      return {error: 'User already existss'};
+    
     }
     
   }
