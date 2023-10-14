@@ -56,4 +56,10 @@ export class UsersService {
     this.userRepository.save(user)
     return { msg: 'user registered with success', err: false };
   }
+
+  async updatePasswordUser(email: string, pass: string): Promise<User>{
+    const user = await this.getUserByEmail(email);
+    user.password = pass;
+    return await this.userRepository.save(user)
+  }
 }

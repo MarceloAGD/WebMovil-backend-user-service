@@ -20,12 +20,7 @@ export class CreateUserInput {
     @IsNotEmpty()
     email: string;
 
-    @IsString()
-    @MinLength(6)
-    @MaxLength(30)
-    @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
-  })
+    @IsNotEmpty()
     password: string;
 }
 

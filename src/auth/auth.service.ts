@@ -122,6 +122,7 @@ export class AuthService {
 
   async recoverPassword(email: string): Promise<ResponseDto | HttpException> {
     const token = Math.random().toString(20).substring(2, 22);
+    let user =await  this.userService.getUserByEmail(email);
 
     try {
       const pass = await this.recoverPasswordRepository.create({
@@ -142,29 +143,28 @@ export class AuthService {
       }
     }
 
-    const url = `http://localhost:3000/reset/${token}`;
 
     await this.mailerService.sendMail({
-      from: process.env.USER,
+      from: "",
       to: email,
       subject: 'Reset your password!',
-      html: `Click <a href="${url}">here</a> to reset your password!`,
+      text: "Estimado " + user.name + " " + user.lastname + " su codigo de recuperacion de contraseña es: " + token,
     });
 
     return { msg: 'Please check your email!', err: false };
   }
 
-  async resetPassword(token: string, password: string, passwordConfirm: string): Promise<HttpException | ResponseDto> {
-    if (password !== passwordConfirm) {
+  async resetPassword(input: ResetPassword): Promise<HttpException | ResponseDto> {
+    if (input.password !== input.passwordConfirm) {
       return new HttpException({ msg: 'Password do not match', err: true }, 400);
     }
 
     const passwordReset = await this.recoverPasswordRepository.findOne({
       where: {
-        token: token,
+        token: input.token,
       },
     });
-
+    console.log(passwordReset)
     const user = await this.authServiceRepository.findOne({
       where: {
         email: passwordReset.email,
@@ -175,15 +175,13 @@ export class AuthService {
       return new HttpException({ msg: 'user not found', err: true }, 404);
     }
 
-    const hashedPassword: string = await bcrypt.hash(password, 10);
+    console.log(user)
+    const hashedPassword = await bcrypt.hash(input.password, 10)
 
-    await this.authServiceRepository.save(
-      {
-        id: user.id,
-        password: hashedPassword,
-      }
-    );
+    console.log(hashedPassword)
+    await this.userService.updatePasswordUser(user.email, hashedPassword);
 
+    await this.recoverPasswordRepository.delete({email: user.email})
     return { msg: 'Password reset', err: false };
   }
 }

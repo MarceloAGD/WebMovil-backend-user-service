@@ -13,7 +13,6 @@ import * as dotenv from 'dotenv';
 import { RecoveryPassword } from './entities/recovery.pass.entity';
 import { UsersModule } from 'src/users/users.module';
 
-import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
 dotenv.config()
 @Module({
