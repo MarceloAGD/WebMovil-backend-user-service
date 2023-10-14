@@ -1,65 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import * as input from './dto/user.input';
 import { User } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { error } from 'console';
+import { ResponseDto } from 'src/app.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ){}
-
-  async createToken({email, password}: User){
-    
-    return {
-      accessToken: jwt.sign({ email, password}, 'secret'),
-    }
-  };
-
-  getUserByEmail(email: string) {
+  async getUserByEmail(email: string) {
     return this.userRepository.findOne({where: {email} });
   }
 
-  async createUser(input: input.CreateUserInput): Promise<User> {
-    const user = await this.getUserByEmail(input.email);
-    if(user){
-      throw new Error('User already exists');
-   }
-    const { password, ...userData } = input;
-    const hashedPassword = await bcrypt.hash(password, 10);
+  async createUser(
+    createUserEnt: input.CreateUserInput,
+  ): Promise<HttpException | ResponseDto> {
+    const user: input.CreateUserInput = {
+      ...createUserEnt,
+      password: await bcrypt.hash(createUserEnt.password, 10),
+    };
 
-    const newUser = await this.userRepository.create({
-      ...userData,
-      password: hashedPassword,
-    });
+    try {
+      const user = await this.userRepository.findOne({
+        where: {
+          email: createUserEnt.email,
+        },
+      });
 
-    return this.userRepository.save(newUser);
-  }
-
-  async login(input: input.LoginUserInput): Promise<any>{
-    
-    const email = input.email
-    const password = input.password
-    const user = await this.userRepository.findOne({//TODO: usar try catch
-      where: {email}
-    }) 
-    if(!user){//TODO: si usuario no existe lanzar un error
-       throw new Error('user does not exist');
+      if (user) {
+        return new HttpException(
+          { msg: 'the user already exists', err: true },
+          400,
+        );
+      }
+    } catch (err) {
+      return new HttpException(
+        { msg: 'internal server error', err: true },
+        500,
+      );
     }
-    //comparar la contraseña que viene del front con la contraseña de la base de datos.
-    
-    const valid = await bcrypt.compare(password, user.password)
-    
-    if(!valid){//las contraseñas no coinciden
-      
-      throw new Error('incorrect password');
+
+    try {
+      await this.userRepository.create(user);
+    } catch (err) {
+      return new HttpException(
+        { msg: 'failed to register user', err: true },
+        500,
+      );
     }
     
-    return await this.createToken(user);
-
+    this.userRepository.save(user)
+    return { msg: 'user registered with success', err: false };
   }
 }
