@@ -164,7 +164,6 @@ export class AuthService {
         token: input.token,
       },
     });
-    console.log(passwordReset)
     const user = await this.authServiceRepository.findOne({
       where: {
         email: passwordReset.email,
@@ -175,10 +174,8 @@ export class AuthService {
       return new HttpException({ msg: 'user not found', err: true }, 404);
     }
 
-    console.log(user)
     const hashedPassword = await bcrypt.hash(input.password, 10)
 
-    console.log(hashedPassword)
     await this.userService.updatePasswordUser(user.email, hashedPassword);
 
     await this.recoverPasswordRepository.delete({email: user.email})
