@@ -24,8 +24,8 @@ dotenv.config()
         port: 465,
         secure: true,
         auth: {
-          user: 'marceloguerra215@gmail.com',
-          pass: 'efje izsi nnuu rmzp',
+          user: process.env.USER,
+          pass: process.env.PASS,
         }
       },
       defaults: {

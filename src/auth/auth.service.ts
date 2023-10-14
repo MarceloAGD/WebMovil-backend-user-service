@@ -145,7 +145,7 @@ export class AuthService {
     const url = `http://localhost:3000/reset/${token}`;
 
     await this.mailerService.sendMail({
-      from: 'marceloguerra215@gmail.com',
+      from: process.env.USER,
       to: email,
       subject: 'Reset your password!',
       html: `Click <a href="${url}">here</a> to reset your password!`,
