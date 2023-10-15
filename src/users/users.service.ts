@@ -186,6 +186,26 @@ export class UsersService {
     }
   }
 
+  async deleteUser(email: string, password: string): Promise<string> {
+    console.log('entrando a deleteUser en service');
+    const user = await this.userRepository.findOne({
+      where: { email }
+    })
+    console.log(user);
+    if (!user) { throw new Error('user does not exist'); }
+    //validar la contraseña que viene del front con la de la base de datos
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) { throw new Error('incorrect password') };//'invalid credentials'
+    //el usuario existe y su contraseña es correcta
+    //por lo tanto existe en la base de datos
+    //ahora hay q borrarlo
+    try {
+      this.userRepository.remove(user);
+      return 'user deleted';
+    } catch (error) {
+      throw new Error('Error deleting user');
+    }
 
+  }
 
 }

@@ -29,6 +29,14 @@ export class Response {
     response: boolean;
   }
 
+  export class DeleteUserResponse {
+    
+    success: boolean;
+  
+    
+    message: string;
+  }  
+
 
 
     

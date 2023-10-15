@@ -44,3 +44,13 @@ export class RecoveryUserInput {
     @IsNotEmpty()
     recoveryPass: number;
 }
+
+export class DeleteUserInput {
+    
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+
+    @IsNotEmpty()
+    password: string;
+}
