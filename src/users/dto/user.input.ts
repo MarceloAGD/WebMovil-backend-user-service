@@ -25,3 +25,22 @@ export class LoginUserInput {
     @IsNotEmpty()
     password: string;
 }
+
+export class RecoveryUserInput {
+    @IsNotEmpty()
+    @IsEmail()
+    email: string;
+  }
+
+  export class ValidateRecoveryUserInput {
+    @IsNotEmpty()
+    recoveryPass: number;
+  }
+
+  export class ChangePassUserInput{
+    @IsNotEmpty()
+    password: string;
+
+    @IsNotEmpty()
+    recoveryPass: number;
+}

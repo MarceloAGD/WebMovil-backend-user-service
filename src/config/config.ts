@@ -13,6 +13,7 @@ const config: TypeOrmModuleOptions = {
   database: process.env.DB_DATABASE,
   entities: [User], 
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  //migrations: ["dist/migrations/**/*{.js,.ts}"],
   synchronize: false, 
   //entities: [__dirname + '/**/*.entity{.ts,.js}'],
 };

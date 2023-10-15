@@ -20,7 +20,14 @@ export class User{
 
     @Column({ nullable: true })//indica que puede ser null
     access_token: string | null
+
+    @Column({ nullable: true, unique: true })  
+    recoveryPass: number;
 }
+
+export class Response {
+    response: boolean;
+  }
 
 
 

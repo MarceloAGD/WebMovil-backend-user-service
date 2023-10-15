@@ -6,6 +6,8 @@ import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { error } from 'console';
+import nodemailer = require('nodemailer')
+
 
 @Injectable()
 export class UsersService {
@@ -40,7 +42,7 @@ export class UsersService {
       ...userData,
       password: hashedPassword,
     });
-    newUser.access_token = jwt.sign({token_email,token_password}, 'secret');
+    newUser.access_token = jwt.sign({ token_email, token_password }, 'secret');
     return this.userRepository.save(newUser);
   }
 
@@ -65,9 +67,9 @@ export class UsersService {
     const token_email = input.email;
     const token_password = input.password;
     //user.access_token = jwt.sign({token_email,token_password}, 'secret');
-    
+
     //await this.userRepository.save(user);
-    
+
     //return user;
     return await this.updateToken(user);
 
@@ -75,13 +77,115 @@ export class UsersService {
 
   async updateToken(user: User) {
     const token_email = user.email;
-    const token_password = user.password; 
-    const access_token = jwt.sign({token_email,token_password}, 'secret');
+    const token_password = user.password;
+    const access_token = jwt.sign({ token_email, token_password }, 'secret');
     user.access_token = access_token;
     this.userRepository.save(user);
     return {
       accessToken: access_token,
     }
   };
+
+  async sendRecoveryEmail(recoveryUserInput: input.RecoveryUserInput): Promise<User> {
+    const email = recoveryUserInput.email;
+    const user = await this.userRepository.findOne({
+      where: { email }
+    })
+    if (!user) {
+      throw new Error('user does not exist');
+    }
+
+
+    /*const nodemailer = require('nodemailer');
+    const client = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+        //user: process.env.darkface,
+        //pass: process.env.nwjsmctpfmiyusgg
+      }
+    });*/
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'brayanmaldonadocarrasco@gmail.com',
+        pass: 'nwjsmctpfmiyusgg'
+      }
+    })
+
+    const recoveryPass = await this.findRecoveryPass();
+
+    transporter.sendMail(
+      {
+        from: '"Night Watch" <noreply@example.com>',
+        to: user.email,
+        subject: "Codigo de recuperacion de contraseña",
+        text: "Estimado" + user.name + " " + user.lastname + " su codigo de recuperacion de contraseña es: " + recoveryPass,
+      },
+      (error) => {
+        if (error) {
+          throw new Error('email could not be sent');
+        } else {
+          console.log("Message sent successfully!");
+          user.recoveryPass = recoveryPass;
+          this.userRepository.save(user);
+        }
+      }
+    );
+    return user;
+  }
+
+  async findRecoveryPass(): Promise<number> {
+    const recoveryPass = Math.floor(100000 + Math.random() * 900000);
+    const user = await this.userRepository.findOne({
+      where: { recoveryPass }
+    });
+    //esta funcion es recurdiva para asegurarse de que los recovery pass sean unicos.
+    if (!user) {
+      return recoveryPass;
+    } else {
+      return this.findRecoveryPass();
+    }
+  }
+
+  async validateRecovery(validateRecoveryInput: input.ValidateRecoveryUserInput): Promise<User> {
+    const recoveryPass = validateRecoveryInput.recoveryPass;
+    const user = await this.userRepository.findOne({
+      where: { recoveryPass }
+    })
+    if (!user) {
+      throw new Error('incorrect recovery code');
+    } else {
+      await this.userRepository.save(user);
+      return user;
+    }
+  }
+
+  async changePass(changePassUserInput: input.ChangePassUserInput): Promise<User> {
+    const newPassword = changePassUserInput.password;
+    const recoveryPass = changePassUserInput.recoveryPass;
+    const user = await this.userRepository.findOne({
+      where: {
+        recoveryPass
+      }
+    })
+
+    const same = await bcrypt.compare(newPassword, user.password);
+
+    if (same) {
+      throw new Error('same password');
+    } else {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      user.recoveryPass = null;
+      await this.userRepository.save(user);
+      return user;
+    }
+  }
+
+
 
 }
