@@ -62,4 +62,15 @@ export class UsersService {
     user.password = pass;
     return await this.userRepository.save(user)
   }
+
+  async removeUser(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: {email} });
+  
+    if (!user) {
+      return false;
+    }
+  
+    await this.userRepository.remove(user);
+    return true;
+  }
 }
