@@ -1,8 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
-import * as jwt from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
+import * as dotenv from 'dotenv';
 
+dotenv.config()
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthGuards implements CanActivate {
+  constructor(
+    private readonly jwtService: JwtService
+    ){}
+  
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
@@ -25,7 +31,7 @@ export class AuthGuard implements CanActivate {
     const token = auth.split(' ')[1];
 
     try {
-      const decoded = jwt.verify(token, 'secret'); // Cambia 'secret' por tu clave secreta
+      const decoded = this.jwtService.verify(token, {secret: process.env.JWT_SECRET}) // Cambia 'secret' por tu clave secreta
       return decoded;
     } catch (err) {
       const message = 'Token error: ' + (err.message || err.name);

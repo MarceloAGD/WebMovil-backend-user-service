@@ -9,21 +9,29 @@ import { User } from '../users/users.entity';
 import { AuthEntity } from './entities/auth.entity';
 import { RecoveryPassword } from './entities/recovery.pass.entity';
 import { RecoverPassword, ResetPassword } from './dto/password.dto';
-import { Payload, UserDto} from './dto/auth.dto';
+import {Payload, UserDto } from './dto/auth.dto';
 import { ResponseDto } from 'src/app.dto';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(AuthEntity) private authServiceRepository: Repository<AuthEntity>,
-    @InjectRepository(RecoveryPassword) private recoverPasswordRepository: Repository<RecoveryPassword>,
+    @InjectRepository(AuthEntity)
+    private authServiceRepository: Repository<AuthEntity>,
+    @InjectRepository(RecoveryPassword)
+    private recoverPasswordRepository: Repository<RecoveryPassword>,
     private userService: UsersService,
     private readonly jwtService: JwtService,
     private mailerService: MailerService,
   ) {}
 
-  async loginByPayload(user: Payload): Promise<{ access_token: string } | HttpException> {
+  async getUser(email: string): Promise<User> {
+    return this.userService.getUserByEmail(email);
+  }
+  async loginByPayload(
+    user: Payload,
+  ): Promise<{ access_token: string } | HttpException> {
+    
     const payload: Payload = {
       id: user.id,
       email: user.email,
@@ -33,7 +41,10 @@ export class AuthService {
     const error: string = await this.saveToken(token, payload.email);
 
     if (error) {
-      return new HttpException({ msg: 'failed to perform the login', err: true }, 500);
+      return new HttpException(
+        { msg: 'failed to perform the login', err: true },
+        500,
+      );
     }
 
     return {
@@ -43,26 +54,27 @@ export class AuthService {
 
   async saveToken(token: string, email: string): Promise<string> {
     try {
-      const auth = await this.authServiceRepository.create({
-        email: email,
-        token: token,
+      const tokenAuth = await this.authServiceRepository.findOne({
+        where: { email },
       });
-      this.authServiceRepository.save(auth);
+      if (!tokenAuth) {
+        const auth = await this.authServiceRepository.create({
+          email: email,
+          token: token,
+        });
+        this.authServiceRepository.save(auth);
+      }
+      await this.authServiceRepository.update(
+        {
+          email: email,
+        },
+        {
+          token: token,
+        },
+      );
       return '';
     } catch (err) {
-      try {
-        await this.authServiceRepository.update(
-          {
-            email: email,
-          },
-          {
-            token: token,
-          }
-        );
-        return '';
-      } catch (err) {
-        return 'error trying to save token';
-      }
+      return 'error trying to save token';
     }
   }
 
@@ -100,21 +112,33 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<Payload | HttpException> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<Payload | HttpException> {
     let user: UserDto;
 
     try {
       user = await this.userService.getUserByEmail(email);
     } catch (err) {
-      return new HttpException({ msg: 'email and/or password invalid', err: true }, 401);
+      return new HttpException(
+        { msg: 'email and/or password invalid', err: true },
+        401,
+      );
     }
 
     try {
       if ((await bcrypt.compare(password, user.password)) === false) {
-        return new HttpException({ msg: 'email and/or password invalid', err: true }, 401);
+        return new HttpException(
+          { msg: 'email and/or password invalid', err: true },
+          401,
+        );
       }
     } catch (err) {
-      return new HttpException({ msg: 'email and/or password invalid', err: true }, 401);
+      return new HttpException(
+        { msg: 'email and/or password invalid', err: true },
+        401,
+      );
     }
 
     return { id: user.id, email: user.email };
@@ -122,41 +146,55 @@ export class AuthService {
 
   async recoverPassword(email: string): Promise<ResponseDto | HttpException> {
     const token = Math.random().toString(20).substring(2, 22);
-    let user =await  this.userService.getUserByEmail(email);
+    let user = await this.userService.getUserByEmail(email);
 
     try {
       const pass = await this.recoverPasswordRepository.create({
         email,
-        token
+        token,
       });
       this.recoverPasswordRepository.save(pass);
-      
     } catch (err) {
       try {
-        const pass = await this.recoverPasswordRepository.findOne({where:{email: email}});
+        const pass = await this.recoverPasswordRepository.findOne({
+          where: { email: email },
+        });
 
-        pass.token = token
+        pass.token = token;
 
         this.recoverPasswordRepository.save(pass);
       } catch (err) {
-        return new HttpException({ msg: 'internal server error', err: true }, 500);
+        return new HttpException(
+          { msg: 'internal server error', err: true },
+          500,
+        );
       }
     }
 
-
     await this.mailerService.sendMail({
-      from: "",
+      from: '',
       to: email,
       subject: 'Reset your password!',
-      text: "Estimado " + user.name + " " + user.lastname + " su codigo de recuperacion de contraseña es: " + token,
+      text:
+        'Estimado ' +
+        user.name +
+        ' ' +
+        user.lastname +
+        ' su codigo de recuperacion de contraseña es: ' +
+        token,
     });
 
     return { msg: 'Please check your email!', err: false };
   }
 
-  async resetPassword(input: ResetPassword): Promise<HttpException | ResponseDto> {
+  async resetPassword(
+    input: ResetPassword,
+  ): Promise<HttpException | ResponseDto> {
     if (input.password !== input.passwordConfirm) {
-      return new HttpException({ msg: 'Password do not match', err: true }, 400);
+      return new HttpException(
+        { msg: 'Password do not match', err: true },
+        400,
+      );
     }
 
     const passwordReset = await this.recoverPasswordRepository.findOne({
@@ -174,11 +212,11 @@ export class AuthService {
       return new HttpException({ msg: 'user not found', err: true }, 404);
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, 10)
+    const hashedPassword = await bcrypt.hash(input.password, 10);
 
     await this.userService.updatePasswordUser(user.email, hashedPassword);
 
-    await this.recoverPasswordRepository.delete({email: user.email})
+    await this.recoverPasswordRepository.delete({ email: user.email });
     return { msg: 'Password reset', err: false };
   }
 }

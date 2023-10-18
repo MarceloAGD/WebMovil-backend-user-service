@@ -13,3 +13,8 @@ export class Payload {
   export class RefreshToken {
     oldToken: string;
   }
+
+  export class Login{
+    email: string;
+    password: string;
+  }

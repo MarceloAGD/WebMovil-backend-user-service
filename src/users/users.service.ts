@@ -11,9 +11,9 @@ import { ResponseDto } from 'src/app.dto';
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-  ){}
-  async getUserByEmail(email: string) {
-    return this.userRepository.findOne({where: {email} });
+  ) {}
+  async getUserByEmail(email: string): Promise<User> {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   async createUser(
@@ -52,25 +52,46 @@ export class UsersService {
         500,
       );
     }
-    
-    this.userRepository.save(user)
+
+    this.userRepository.save(user);
     return { msg: 'user registered with success', err: false };
   }
 
-  async updatePasswordUser(email: string, pass: string): Promise<User>{
+  async updatePasswordUser(email: string, pass: string): Promise<User> {
     const user = await this.getUserByEmail(email);
     user.password = pass;
-    return await this.userRepository.save(user)
+    return await this.userRepository.save(user);
   }
 
   async removeUser(email: string): Promise<boolean> {
-    const user = await this.userRepository.findOne({ where: {email} });
-  
+    const user = await this.userRepository.findOne({ where: { email } });
+
     if (!user) {
       return false;
     }
-  
+
     await this.userRepository.remove(user);
     return true;
+  }
+
+  async updateUser(
+    email: string,
+    name: string,
+    lastname: string,
+  ): Promise<boolean> {
+    try {
+      await this.userRepository.update(
+        {
+          email: email,
+        },
+        {
+          name: name,
+          lastname: lastname,
+        },
+      );
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }
