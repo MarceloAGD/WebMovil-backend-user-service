@@ -23,6 +23,9 @@ export class User{
 
     @Column({ nullable: true, unique: true })  
     recoveryPass: number;
+
+    @Column('int', {array:true, default:[]})
+    idTeams: number[];
 }
 
 export class Response {
