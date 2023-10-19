@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Query, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User, Response, DeleteUserResponse } from './users.entity'
+import { User, Response, DeleteUserResponse,addTeamToUserResponse } from './users.entity'
 import { AuthGuard } from './auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
@@ -53,6 +53,16 @@ export class UsersController {
         return { error: 'An error occurred' };
       }
     }
+  }
+
+  @Post('addTeamToUser')
+  async addTeamToUser(@Body() input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
+    try{
+      return await this.userService.addTeamToUser(input);
+    }catch(error){
+      return { success: false, message: "an error has ocurred"};
+    }
+
   }
 
   @Post('recovery')

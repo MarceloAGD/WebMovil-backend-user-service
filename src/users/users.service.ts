@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as input from './dto/user.input';
-import { User } from './users.entity';
+import { User, addTeamToUserResponse } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -205,6 +205,30 @@ export class UsersService {
     } catch (error) {
       throw new Error('Error deleting user');
     }
+
+  }
+
+  async addTeamToUser(input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
+    console.log("entro a service")
+    const id = input.userId
+    const teamId = input.teamId
+    console.log("antes del where id")
+    const user = await this.userRepository.findOne({
+      where: { id }
+    })
+    console.log("antes del if")
+    if(!user){
+      return { success: false, message: "user does not exists"};
+    }
+    //add teamId to user.idTeams array
+    //revisar que teamId no este ya presente en user.idTeams
+    if (user.idTeams.includes(teamId)) {
+      return { success: false, message: "Team is already associated with the user" };
+    }
+    user.idTeams.push(teamId);
+
+    await this.userRepository.save(user);
+    return { success: true, message: "Team added to user" };
 
   }
 

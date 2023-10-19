@@ -40,6 +40,13 @@ export class Response {
     message: string;
   }  
 
+  export class addTeamToUserResponse {
+    
+    success: boolean;
+  
+    
+    message: string;
+  }  
 
 
     
