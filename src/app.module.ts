@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import config from './config/config';
+//import {dataSourceOptions} from '../orm.config'
 @Module({
   imports: [
     TypeOrmModule.forRoot(config),
