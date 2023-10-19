@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as input from './dto/user.input';
-import { User, addTeamToUserResponse } from './users.entity';
+import { User, addTeamToUserResponse, validateUserResponse } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -230,6 +230,17 @@ export class UsersService {
     await this.userRepository.save(user);
     return { success: true, message: "Team added to user" };
 
+  }
+
+  async validateUser(input: input.validateUserInput): Promise<validateUserResponse>{
+    const email = input.userEmail;
+    const user = await this.userRepository.findOne({
+      where: { email }
+    })
+    if(!user){
+      return { success: false, message: "user does not exist" };
+    }
+    return { success: true, message: "user exist", idUser: user.id };
   }
 
 }

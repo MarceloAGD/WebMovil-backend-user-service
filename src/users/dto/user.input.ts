@@ -63,3 +63,10 @@ export class addTeamToUserInput {
   @IsNotEmpty()
   teamId: number;
 }
+
+export class validateUserInput {
+  
+  @IsNotEmpty()
+  userEmail: string;
+
+}

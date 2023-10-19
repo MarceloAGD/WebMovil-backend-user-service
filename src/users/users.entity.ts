@@ -48,5 +48,14 @@ export class Response {
     message: string;
   }  
 
+  export class validateUserResponse {
+    
+    success: boolean;
+  
+    message: string;
+
+    idUser?: number;
+  }  
+
 
     
