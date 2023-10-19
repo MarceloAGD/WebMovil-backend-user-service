@@ -2,6 +2,7 @@ import {
     IsEmail,
     IsNotEmpty,
     IsString,
+    IsEmpty
 
   } from 'class-validator';
 export class UpdateUserInput {
@@ -17,4 +18,15 @@ export class UpdateUserInput {
     @IsNotEmpty()
     email: string;
 
+}
+
+export class UpdatePasswordUserInput {
+  @IsNotEmpty()
+  email: string;
+
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @IsNotEmpty()
+  newPassword: string;
 }

@@ -94,4 +94,27 @@ export class UsersService {
       return false;
     }
   }
+
+  async updatePassword(
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<boolean> {
+    const pass = await bcrypt.hash(newPassword, 10);
+    try {
+      const user = await this.userRepository.findOne(
+        {
+          where: {email: email},
+        },
+      );
+      if(bcrypt.compare(user.password, oldPassword)){
+        user.password = pass
+        await this.userRepository.save(user);
+        return true
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  }
 }
