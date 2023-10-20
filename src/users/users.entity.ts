@@ -18,12 +18,6 @@ export class User{
     @Column()
     password: string;
 
-    @Column({ nullable: true })//indica que puede ser null
-    access_token: string | null
-
-    @Column({ nullable: true, unique: true })  
-    recoveryPass: number;
-
     @Column('int', {array:true, default:[]})
     idTeams: number[];
 }

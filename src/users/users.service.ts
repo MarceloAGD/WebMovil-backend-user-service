@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import * as input from './dto/user.input';
-import { User } from './users.entity';
+import { User, addTeamToUserResponse, validateUserResponse } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -116,5 +116,56 @@ export class UsersService {
     } catch (err) {
       return false;
     }
+  }
+
+  
+  async addTeamToUser(input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
+    const id = input.userId
+    const teamId = input.teamId
+
+    const user = await this.userRepository.findOne({
+      where: { id }
+    })
+    if(!user){
+      return { success: false, message: "user does not exists"};
+    }
+    if (user.idTeams.includes(teamId)) {
+      return { success: false, message: "Team is already associated with the user" };
+    }
+    user.idTeams.push(teamId);
+
+    await this.userRepository.save(user);
+    return { success: true, message: "Team added to user" };
+
+  }
+  async removeTeamToUser(input: input.removeTeamToUserInput): Promise<addTeamToUserResponse> {
+    const id = input.userId;
+    const teamId = input.teamId;
+    const user = await this.userRepository.findOne({
+      where: { id }
+    });
+  
+    if (!user) {
+      return { success: false, message: "User does not exist" };
+    }
+  
+    if (!user.idTeams.includes(teamId)) {
+      return { success: false, message: "Team is not associated with the user" };
+    }
+  
+    user.idTeams = user.idTeams.filter((id) => id !== teamId);
+    await this.userRepository.save(user);
+    return { success: true, message: "Team removed from user" };
+  }
+
+  async validateUser(input: input.validateUserInput): Promise<validateUserResponse>{
+    const email = input.userEmail;
+    const user = await this.userRepository.findOne({
+      where: { email }
+    })
+    if(!user){
+      return { success: false, message: "user does not exist" };
+    }
+    return { success: true, message: "user exist", idUser: user.id };
   }
 }

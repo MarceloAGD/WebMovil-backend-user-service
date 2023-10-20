@@ -2,7 +2,7 @@ import { Controller, Post, Body,HttpException, Delete, Param, Get, UseGuards} fr
 import { UsersService } from './users.service';
 import { ResponseDto } from 'src/app.dto';
 import * as input from './dto/user.input';
-import { User } from './users.entity';
+import { User, addTeamToUserResponse, validateUserResponse } from './users.entity';
 import { UpdateUserInput, UpdatePasswordUserInput} from './dto/update.user.input';
 @Controller('user')
 export class UsersController {
@@ -28,5 +28,33 @@ export class UsersController {
   @Post('update-password')
   updatePassword(@Body() input: UpdatePasswordUserInput){
     return this.userService.updatePassword(input.email, input.oldPassword, input.newPassword);
+  }
+
+  @Post('addTeamToUser')
+  async addTeamToUser(@Body() input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
+    try{
+      return await this.userService.addTeamToUser(input);
+    }catch(error){
+      return { success: false, message: "an error has ocurred"};
+    }
+
+  }
+
+  @Post('removeTeamUser')
+  async removeTeamUser(@Body() input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
+    try{
+      return await this.userService.removeTeamToUser(input);
+    }catch(error){
+      return { success: false, message: "an error has ocurred"};
+    }
+  }
+ @Get('validateUser')
+  async validateUser(@Body() validateUserInput: input.validateUserInput): Promise<validateUserResponse>{
+    try{
+      return await this.userService.validateUser(validateUserInput);
+    }catch(error){
+      return { success: false, message: "an error has ocurred" };
+    }
+    
   }
 }
