@@ -27,9 +27,6 @@ export class addTeamToUserInput {
 
 export class removeTeamToUserInput {
   @IsNotEmpty()
-  userId: number;
-
-  @IsNotEmpty()
   teamId: number;
 }
 

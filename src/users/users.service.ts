@@ -138,24 +138,24 @@ export class UsersService {
     return { success: true, message: "Team added to user" };
 
   }
-  async removeTeamToUser(input: input.removeTeamToUserInput): Promise<addTeamToUserResponse> {
-    const id = input.userId;
-    const teamId = input.teamId;
-    const user = await this.userRepository.findOne({
-      where: { id }
-    });
-  
-    if (!user) {
-      return { success: false, message: "User does not exist" };
+  async removeTeamToUser(teamId: number): Promise<addTeamToUserResponse> {
+    // Encuentra todos los usuarios que tienen el teamId en su lista idTeams
+    const users = await this.userRepository
+      .createQueryBuilder("user")
+      .where(":teamId = ANY(user.idTeams)", { teamId })
+      .getMany();
+    
+    if (users.length === 0) {
+      return { success: false, message: "No users are associated with this team" };
     }
   
-    if (!user.idTeams.includes(teamId)) {
-      return { success: false, message: "Team is not associated with the user" };
+    // Elimina teamId de la lista idTeams de cada usuario
+    for (const user of users) {
+      user.idTeams = user.idTeams.filter((id) => id !== teamId);
+      await this.userRepository.save(user);
     }
   
-    user.idTeams = user.idTeams.filter((id) => id !== teamId);
-    await this.userRepository.save(user);
-    return { success: true, message: "Team removed from user" };
+    return { success: true, message: "Team removed from users" };
   }
 
   async validateUser(input: input.validateUserInput): Promise<validateUserResponse>{
