@@ -26,8 +26,9 @@ export class AuthService {
   ) {}
 
   async getUser(email: string): Promise<User> {
-    return this.userService.getUserByEmail(email);
+    return await this.userService.getUserByEmail(email);
   }
+
   async loginByPayload(
     user: Payload,
   ): Promise<{ access_token: string } | HttpException> {
@@ -145,7 +146,7 @@ export class AuthService {
   }
 
   async recoverPassword(email: string): Promise<ResponseDto | HttpException> {
-    const token = Math.random().toString(20).substring(2, 22);
+    const token = Math.random().toString(20).substring(2, 8);
     let user = await this.userService.getUserByEmail(email);
 
     try {

@@ -58,6 +58,6 @@ export class AuthController {
   @Get('get-user')
   @UseGuards(AuthGuards)
   async getUser(@Param('email') email: string): Promise<User>{
-    return this.authService.getUser(email);
+    return await this.authService.getUser(email);
   }
 }

@@ -13,7 +13,7 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
   async getUserByEmail(email: string): Promise<User> {
-    return this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({ where: { email: email } });
   }
 
   async createUser(
