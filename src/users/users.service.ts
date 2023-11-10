@@ -13,7 +13,11 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
   async getUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { email: email } });
+    console.log("email en users.service");
+    console.log(email);
+    const user =  await this.userRepository.findOne({ where: { email } });
+    console.log(user);
+    return user;
   }
 
   async createUser(

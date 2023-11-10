@@ -11,7 +11,7 @@ import {
   Param
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ResponseDto } from 'src/app.dto';
+import { ResponseDto, getUserDto } from 'src/app.dto';
 import { AuthService } from './auth.service';
 import { RecoverPassword, ResetPassword } from './dto/password.dto';
 import { Login, RefreshToken } from './dto/auth.dto';
@@ -30,8 +30,11 @@ export class AuthController {
   async login(
     @Body() input: Login,
   ): Promise<{ access_token: string } | HttpException> {
+    console.log("entrando a login en backend de user");
     const result = await this.authService.validateUser(input.email, input.password);
+    console.log(result);
     if (result instanceof HttpException) {
+      console.timeLog("entro al if");
       return result;
     }
     return await this.authService.loginByPayload(result);
@@ -55,9 +58,12 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
-  @Get('get-user')
-  @UseGuards(AuthGuards)
-  async getUser(@Param('email') email: string): Promise<User>{
-    return await this.authService.getUser(email);
+  @Post('get-user')
+  
+  async getUser(@Body() email: getUserDto): Promise<User>{
+    console.log("marcelo-email");
+    console.log(email);
+    const extractedEmail = email.email;
+    return await this.authService.getUser(extractedEmail);
   }
 }
