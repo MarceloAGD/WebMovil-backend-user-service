@@ -30,6 +30,7 @@ export class UsersController {
     return this.userService.updatePassword(input.email, input.oldPassword, input.newPassword);
   }
 
+  /** 
   @Post('addTeamToUser')
   async addTeamToUser(@Body() input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
     try{
@@ -39,7 +40,8 @@ export class UsersController {
     }
 
   }
-
+*/
+/*
   @Post('removeTeamUser')
   async removeTeamUser(@Body() input: input.removeTeamToUserInput):Promise<addTeamToUserResponse>{
     const teamId = input.teamId
@@ -49,7 +51,7 @@ export class UsersController {
     }catch(error){
       return { success: false, message: "an error has ocurred"};
     }
-  }
+  }*/
 
  @Get('validateUser')
   async validateUser(@Body() validateUserInput: input.validateUserInput): Promise<validateUserResponse>{

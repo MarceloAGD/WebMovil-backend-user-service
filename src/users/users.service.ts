@@ -122,7 +122,7 @@ export class UsersService {
     }
   }
 
-  
+  /*
   async addTeamToUser(input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
     const id = input.userId
     const teamId = input.teamId
@@ -142,6 +142,8 @@ export class UsersService {
     return { success: true, message: "Team added to user" };
 
   }
+  */
+ /*
   async removeTeamToUser(teamId: number): Promise<addTeamToUserResponse> {
     // Encuentra todos los usuarios que tienen el teamId en su lista idTeams
     const users = await this.userRepository
@@ -160,7 +162,7 @@ export class UsersService {
     }
   
     return { success: true, message: "Team removed from users" };
-  }
+  }*/
 
   async validateUser(input: input.validateUserInput): Promise<validateUserResponse>{
     const email = input.userEmail;

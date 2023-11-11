@@ -18,8 +18,8 @@ export class User{
     @Column()
     password: string;
 
-    @Column('int', {array:true, default:[]})
-    idTeams: number[];
+    //@Column('int', {array:true, default:[]})
+    //idTeams: number[];
 }
 
 export class Response {
