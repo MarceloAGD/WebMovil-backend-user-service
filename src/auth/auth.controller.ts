@@ -30,11 +30,11 @@ export class AuthController {
   async login(
     @Body() input: Login,
   ): Promise<{ access_token: string } | HttpException> {
-    console.log("entrando a login en backend de user");
+    
     const result = await this.authService.validateUser(input.email, input.password);
-    console.log(result);
+    
     if (result instanceof HttpException) {
-      console.timeLog("entro al if");
+      //console.timeLog("entro al if");
       return result;
     }
     return await this.authService.loginByPayload(result);
@@ -61,8 +61,7 @@ export class AuthController {
   @Post('get-user')
   
   async getUser(@Body() email: getUserDto): Promise<User>{
-    console.log("marcelo-email");
-    console.log(email);
+  
     const extractedEmail = email.email;
     return await this.authService.getUser(extractedEmail);
   }

@@ -13,10 +13,9 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
   async getUserByEmail(email: string): Promise<User> {
-    console.log("email en users.service");
-    console.log(email);
+    
     const user =  await this.userRepository.findOne({ where: { email } });
-    console.log(user);
+    
     return user;
   }
 
@@ -104,15 +103,21 @@ export class UsersService {
     oldPassword: string,
     newPassword: string,
   ): Promise<boolean> {
-    const pass = await bcrypt.hash(newPassword, 10);
+    console.log("email en service: ", email);
+    console.log("oldpass en service: ", oldPassword);
+    console.log("newPass en service: ", newPassword);
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10);
     try {
       const user = await this.userRepository.findOne(
         {
           where: {email: email},
         },
       );
-      if(bcrypt.compare(user.password, oldPassword)){
-        user.password = pass
+      console.log("printenado user:");
+      console.log(user)
+      if(await bcrypt.compare(oldPassword, user.password)){
+        console.log("entro al if");
+        user.password = newPasswordHashed
         await this.userRepository.save(user);
         return true
       }

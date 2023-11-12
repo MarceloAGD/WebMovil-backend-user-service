@@ -26,8 +26,7 @@ export class AuthService {
   ) {}
 
   async getUser(email: string): Promise<User> {
-    console.log("getuser en auth.service");
-    console.log(email);
+    
     return await this.userService.getUserByEmail(email);
   }
 
@@ -39,23 +38,17 @@ export class AuthService {
       id: user.id,
       email: user.email,
     };
-    console.log("antes de entrar a savetokem");
+    
     const token: string = this.jwtService.sign(payload);
     const error: boolean = await this.saveToken(token, payload.email);
-    console.log("-----");
-    console.log(payload);
-    console.log(payload.email);
-    console.log("----");
-    console.log(error);
     if (!error) {
-      console.log("entro a qui")
-      console.log(token);
+
       return new HttpException(
         { msg: 'failed to perform the login', err: true },
         500,
       );
     }
-    console.log("checkpoint 1");
+    
     
     return {
       access_token: token,
@@ -64,14 +57,11 @@ export class AuthService {
 
   async saveToken(token: string, email: string): Promise<boolean> {
     try {
-      console.log("savetoken");
-      console.log(token);
-      console.log(email);
-      console.log("antes de tokenAuth");
+     
       const tokenAuth = await this.authServiceRepository.findOne({
         where: { email },
       });
-      console.log("despues de tokenAuth");
+      
       if (!tokenAuth) {
         const auth = await this.authServiceRepository.create({
           email: email,

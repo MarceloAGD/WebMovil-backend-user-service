@@ -26,7 +26,9 @@ export class UsersController {
   }
   
   @Post('update-password')
-  updatePassword(@Body() input: UpdatePasswordUserInput){
+  updatePassword(@Body() input: UpdatePasswordUserInput): Promise<boolean>{
+    console.log("old password:", input.oldPassword);
+    console.log("new password:", input.newPassword);
     return this.userService.updatePassword(input.email, input.oldPassword, input.newPassword);
   }
 
