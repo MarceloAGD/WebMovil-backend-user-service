@@ -178,7 +178,7 @@ export class AuthService {
     }
 
     await this.mailerService.sendMail({
-      from: '',
+      from: "Night's watch support team",
       to: email,
       subject: 'Reset your password!',
       text:
