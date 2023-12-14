@@ -58,11 +58,14 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
-  @Post('get-user')
-  
+  @Post('get-user') 
   async getUser(@Body() email: getUserDto): Promise<User>{
-  
     const extractedEmail = email.email;
     return await this.authService.getUser(extractedEmail);
+  }
+
+  @Get('get-user/:id')
+  async  getUserById(@Param('id') id: number): Promise<User>{
+    return await this.authService.getUserById(id);
   }
 }

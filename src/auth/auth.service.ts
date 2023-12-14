@@ -225,4 +225,8 @@ export class AuthService {
     await this.recoverPasswordRepository.delete({ email: user.email });
     return { msg: 'Password reset', err: false };
   }
+
+  async getUserById(id: number): Promise<User> {
+    return await this.userService.getUserById(id);
+  }
 }
