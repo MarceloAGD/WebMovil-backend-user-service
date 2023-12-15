@@ -143,4 +143,8 @@ export class UsersService {
     }
     return { success: true, message: "user exist", idUser: user.id };
   }
+
+  async findAll(): Promise<User[]> {
+    return await this.userRepository.find();
+  }
 }

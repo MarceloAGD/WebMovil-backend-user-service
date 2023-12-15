@@ -42,4 +42,9 @@ export class UsersController {
     }
     
   }
+
+  @Get('users')
+  async findAll(): Promise<User[]> {
+    return this.userService.findAll();
+  }
 }
