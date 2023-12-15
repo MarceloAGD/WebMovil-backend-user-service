@@ -15,6 +15,8 @@ export class CreateUserInput {
 
   @IsNotEmpty()
   password: string;
+
+  role?: string;
 }
 
 export class addTeamToUserInput {
@@ -36,3 +38,12 @@ export class validateUserInput {
   userEmail: string;
 
 }
+
+export class validateUserResponse {
+    
+  success: boolean;
+
+  message: string;
+
+  idUser?: number;
+}  

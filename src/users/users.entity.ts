@@ -18,38 +18,12 @@ export class User{
     @Column()
     password: string;
 
-    //@Column('int', {array:true, default:[]})
-    //idTeams: number[];
+    @Column()
+    role?: string;
 }
 
-export class Response {
-    response: boolean;
-  }
 
-  export class DeleteUserResponse {
-    
-    success: boolean;
-  
-    
-    message: string;
-  }  
-
-  export class addTeamToUserResponse {
-    
-    success: boolean;
-  
-    
-    message: string;
-  }  
-
-  export class validateUserResponse {
-    
-    success: boolean;
-  
-    message: string;
-
-    idUser?: number;
-  }  
+ 
 
 
     
