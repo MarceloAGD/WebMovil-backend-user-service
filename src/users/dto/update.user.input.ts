@@ -18,6 +18,7 @@ export class UpdateUserInput {
     @IsNotEmpty()
     email: string;
 
+    role?: string;
 }
 
 export class UpdatePasswordUserInput {

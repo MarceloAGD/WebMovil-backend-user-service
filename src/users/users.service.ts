@@ -1,19 +1,28 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import * as input from './dto/user.input';
-import { User, addTeamToUserResponse, validateUserResponse } from './users.entity';
+import { User, } from './users.entity';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResponseDto } from 'src/app.dto';
-
+import { validateUserResponse } from './dto/user.input';
+import { UpdateUserInput } from './dto/update.user.input';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
   async getUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { email: email } });
+    
+    const user =  await this.userRepository.findOne({ where: { email } });
+    
+    return user;
+  }
+
+  async getUserById(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    return user;
   }
 
   async createUser(
@@ -22,8 +31,10 @@ export class UsersService {
     const user: input.CreateUserInput = {
       ...createUserEnt,
       password: await bcrypt.hash(createUserEnt.password, 10),
+      
     };
-
+    user.role = 'user';
+    
     try {
       const user = await this.userRepository.findOne({
         where: {
@@ -74,19 +85,17 @@ export class UsersService {
     return true;
   }
 
-  async updateUser(
-    email: string,
-    name: string,
-    lastname: string,
+  async updateUser(input: UpdateUserInput,
   ): Promise<boolean> {
     try {
       await this.userRepository.update(
         {
-          email: email,
+          email: input.email,
         },
         {
-          name: name,
-          lastname: lastname,
+          name: input.name,
+          lastname: input.lastname,
+          role: input.role,
         },
       );
       return true;
@@ -100,15 +109,21 @@ export class UsersService {
     oldPassword: string,
     newPassword: string,
   ): Promise<boolean> {
-    const pass = await bcrypt.hash(newPassword, 10);
+    console.log("email en service: ", email);
+    console.log("oldpass en service: ", oldPassword);
+    console.log("newPass en service: ", newPassword);
+    const newPasswordHashed = await bcrypt.hash(newPassword, 10);
     try {
       const user = await this.userRepository.findOne(
         {
           where: {email: email},
         },
       );
-      if(bcrypt.compare(user.password, oldPassword)){
-        user.password = pass
+      console.log("printenado user:");
+      console.log(user)
+      if(await bcrypt.compare(oldPassword, user.password)){
+        console.log("entro al if");
+        user.password = newPasswordHashed
         await this.userRepository.save(user);
         return true
       }
@@ -116,46 +131,6 @@ export class UsersService {
     } catch (err) {
       return false;
     }
-  }
-
-  
-  async addTeamToUser(input: input.addTeamToUserInput):Promise<addTeamToUserResponse>{
-    const id = input.userId
-    const teamId = input.teamId
-
-    const user = await this.userRepository.findOne({
-      where: { id }
-    })
-    if(!user){
-      return { success: false, message: "user does not exists"};
-    }
-    if (user.idTeams.includes(teamId)) {
-      return { success: false, message: "Team is already associated with the user" };
-    }
-    user.idTeams.push(teamId);
-
-    await this.userRepository.save(user);
-    return { success: true, message: "Team added to user" };
-
-  }
-  async removeTeamToUser(teamId: number): Promise<addTeamToUserResponse> {
-    // Encuentra todos los usuarios que tienen el teamId en su lista idTeams
-    const users = await this.userRepository
-      .createQueryBuilder("user")
-      .where(":teamId = ANY(user.idTeams)", { teamId })
-      .getMany();
-    
-    if (users.length === 0) {
-      return { success: false, message: "No users are associated with this team" };
-    }
-  
-    // Elimina teamId de la lista idTeams de cada usuario
-    for (const user of users) {
-      user.idTeams = user.idTeams.filter((id) => id !== teamId);
-      await this.userRepository.save(user);
-    }
-  
-    return { success: true, message: "Team removed from users" };
   }
 
   async validateUser(input: input.validateUserInput): Promise<validateUserResponse>{
@@ -167,5 +142,9 @@ export class UsersService {
       return { success: false, message: "user does not exist" };
     }
     return { success: true, message: "user exist", idUser: user.id };
+  }
+
+  async findAll(): Promise<User[]> {
+    return await this.userRepository.find();
   }
 }

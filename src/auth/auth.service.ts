@@ -26,6 +26,7 @@ export class AuthService {
   ) {}
 
   async getUser(email: string): Promise<User> {
+    
     return await this.userService.getUserByEmail(email);
   }
 
@@ -37,33 +38,36 @@ export class AuthService {
       id: user.id,
       email: user.email,
     };
-
+    
     const token: string = this.jwtService.sign(payload);
-    const error: string = await this.saveToken(token, payload.email);
+    const error: boolean = await this.saveToken(token, payload.email);
+    if (!error) {
 
-    if (error) {
       return new HttpException(
         { msg: 'failed to perform the login', err: true },
         500,
       );
     }
-
+    
+    
     return {
       access_token: token,
     };
   }
 
-  async saveToken(token: string, email: string): Promise<string> {
+  async saveToken(token: string, email: string): Promise<boolean> {
     try {
+     
       const tokenAuth = await this.authServiceRepository.findOne({
         where: { email },
       });
+      
       if (!tokenAuth) {
         const auth = await this.authServiceRepository.create({
           email: email,
           token: token,
         });
-        this.authServiceRepository.save(auth);
+        await this.authServiceRepository.save(auth);
       }
       await this.authServiceRepository.update(
         {
@@ -73,9 +77,9 @@ export class AuthService {
           token: token,
         },
       );
-      return '';
+      return true;
     } catch (err) {
-      return 'error trying to save token';
+      return false;
     }
   }
 
@@ -141,7 +145,8 @@ export class AuthService {
         401,
       );
     }
-
+    console.log(user.id);
+    console.log(user.email);
     return { id: user.id, email: user.email };
   }
 
@@ -173,7 +178,7 @@ export class AuthService {
     }
 
     await this.mailerService.sendMail({
-      from: '',
+      from: "Night's watch support team",
       to: email,
       subject: 'Reset your password!',
       text:
@@ -219,5 +224,9 @@ export class AuthService {
 
     await this.recoverPasswordRepository.delete({ email: user.email });
     return { msg: 'Password reset', err: false };
+  }
+
+  async getUserById(id: number): Promise<User> {
+    return await this.userService.getUserById(id);
   }
 }
